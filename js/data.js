@@ -2,8 +2,8 @@ import { getRandomNumber, getRandomRange, getRandomArrayIndex } from './util.js'
 
 const SIMILAR_ITEM_COUNT = 10;
 const AVATAR = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
-const TITLE = ['Красиво и тихо', 'Уютно и недорого', 'Доступно и удобно'];
-const TYPE = ['palace', 'flat', 'house', 'bungalo', 'hotel'];
+const TITLE = ['Красивое и тихое местечко', 'Уютная и недорогая обитель', 'Доступное и удобное жилье'];
+const TYPE = ['palace', 'flat', 'house', 'bungalow', 'hotel'];
 const CHECKIN = ['12:00', '13:00', '14:00'];
 const CHECKOUT = ['12:00', '13:00', '14:00'];
 const FEATURES = ['wifi', 'dishwasher', 'parking', 'washer', 'elevator', 'conditioner'];
@@ -27,7 +27,7 @@ const createData = () => {
       price: getRandomNumber(3000, 100000),
       type: getRandomArrayIndex(TYPE),
       rooms: getRandomNumber(1, 5),
-      guest: getRandomNumber(1, 10),
+      guests: getRandomNumber(1, 10),
       checkin: getRandomArrayIndex(CHECKIN),
       checkout: getRandomArrayIndex(CHECKOUT),
       features: getRandomArrayIndex(FEATURES),

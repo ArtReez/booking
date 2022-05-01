@@ -14,4 +14,12 @@ const getRandomRange = (min, max, range) => {
 
 const getRandomArrayIndex = (item) => item[getRandomNumber(0, item.length - 1)];
 
-export { getRandomNumber, getRandomRange, getRandomArrayIndex };
+const offerType = {
+  flat: 'Квартира',
+  bungalow: 'Бунгало',
+  house: 'Дом',
+  palace: 'Дворец',
+  hotel: 'Отель',
+};
+
+export { getRandomNumber, getRandomRange, getRandomArrayIndex, offerType };
