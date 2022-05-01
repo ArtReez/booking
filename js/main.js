@@ -2,4 +2,8 @@
 /* eslint-disable no-console */
 
 import { similarData } from './data.js';
-console.log(similarData);
+import { mapList, listFragment } from './card.js';
+import { enabledForm, disabledForm } from './active.js';
+
+// disabledForm();
+// enabledForm();
