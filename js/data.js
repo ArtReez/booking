@@ -2,7 +2,7 @@ import { getRandomNumber, getRandomRange, getRandomArrayIndex } from './util.js'
 
 const SIMILAR_ITEM_COUNT = 10;
 const AVATAR = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
-const TITLE = ['Красивое и тихое местечко', 'Уютная и недорогая обитель', 'Доступное и удобное жилье'];
+const TITLE = ['Тихое местечко', 'Красивое местечко', 'Уютная обитель', 'Недорогая обитель', 'Доступное жилье', 'Удобное жилье'];
 const TYPE = ['palace', 'flat', 'house', 'bungalow', 'hotel'];
 const CHECKIN = ['12:00', '13:00', '14:00'];
 const CHECKOUT = ['12:00', '13:00', '14:00'];
@@ -42,5 +42,6 @@ const createData = () => {
 };
 
 const similarData = Array.from({ length: SIMILAR_ITEM_COUNT }, createData);
+// console.log(similarData);
 
 export { similarData };
