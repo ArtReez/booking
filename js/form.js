@@ -41,8 +41,6 @@ const roomNumberHandler = (roomNumberValue) => {
 
   const roomNumberSelect = (arrayGuests) => {
     arrayGuests.forEach((item) => {
-      roomCapacity[item].removeAttribute('hidden');
-
       if (roomCapacity[item].value === item.toString()) {
         roomCapacity[item].removeAttribute('hidden');
         roomCapacity[item].selected = true;
@@ -59,8 +57,8 @@ const timeCardHandler = (timeCardValue) => {
 
     if (timeinCard[i].value === timeCardValue || timeoutCard[i].value === timeCardValue) {
       timeinCard[i].setAttribute('selected', '');
-      timeoutCard[i].setAttribute('selected', '');
       timeinCard[i].selected = true;
+      timeoutCard[i].setAttribute('selected', '');
       timeoutCard[i].selected = true;
     }
   }
