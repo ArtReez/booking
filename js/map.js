@@ -44,8 +44,10 @@ mainPinMarker.on('moveend', (evt) => {
   addressForm.value = `${addressLocation[0]}, ${addressLocation[1]}`;
 });
 
+const markerGroup = L.layerGroup().addTo(map);
+
 const createMarker = (point) => {
-  const {location: { lat, lng }} = point;
+  const { location: { lat, lng } } = point;
 
   const icon = L.icon({
     iconUrl: './img/pin.svg',
@@ -64,17 +66,11 @@ const createMarker = (point) => {
   );
 
   marker
-    .addTo(map)
+    .addTo(markerGroup)
     .bindPopup(createCustomPopup(point));
-  // return marker;
 };
 
 similarData.forEach((point) => createMarker(point));
-
-// const markers = similarData.map((point) => createMarker(point));
-// markers.forEach((marker) => {
-//   console.log(marker);
-//   marker.remove();
-// });
+// markerGroup.clearLayers();
 
 export { map, mainPinMarker, mainPinIcon, addressForm };
