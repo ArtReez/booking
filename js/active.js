@@ -1,11 +1,11 @@
 const adForm = document.querySelector('.ad-form');
-const mapFilters = document.querySelector('.map__filters');
-const arrayForm = [adForm, mapFilters];
+const mapFiltersForm = document.querySelector('.map__filters');
+const arrayForms = [adForm, mapFiltersForm];
 
 const enabledForm = () => {
   adForm.classList.remove('ad-form--disabled');
-  mapFilters.classList.remove('map__filters--disabled');
-  arrayForm.forEach((item) => {
+  mapFiltersForm.classList.remove('map__filters--disabled');
+  arrayForms.forEach((item) => {
     for (let i = 0; i < item.children.length; i++) {
       item.children[i].removeAttribute('disabled', '');
     }
@@ -14,12 +14,12 @@ const enabledForm = () => {
 
 const disabledForm = () => {
   adForm.classList.add('ad-form--disabled');
-  mapFilters.classList.add('map__filters--disabled');
-  arrayForm.forEach((item) => {
+  mapFiltersForm.classList.add('map__filters--disabled');
+  arrayForms.forEach((item) => {
     for (let i = 0; i < item.children.length; i++) {
       item.children[i].setAttribute('disabled', '');
     }
   });
 };
 
-export { enabledForm, disabledForm };
+export { enabledForm, disabledForm, adForm, mapFiltersForm };
