@@ -1,22 +1,25 @@
 /* eslint-disable no-console */
 import { disabledForm, enabledForm } from './active.js';
-import { createCustomPopup } from './card.js';
-import { similarData } from './data.js';
+import { renderSimilarPopup } from './card.js';
 
-const addressForm = document.querySelector('#address');
-addressForm.value = `${35.6895}, ${139.692}`;
+const DEFAULT_LAT = 35.6895;
+const DEFAULT_LNG = 139.692;
+const MAP_ZOOM = 12;
+const addressFormValue = document.querySelector('#address');
+let mainPinMarker;
+
 disabledForm();
-
 const map = L.map('map-canvas')
   .on('load', () => {
     enabledForm();
-    console.log('Map ready');
+    // console.log('Map ready');
   })
   .setView(
     {
-      lat: 35.6895,
-      lng: 139.692,
-    }, 12);
+      lat: DEFAULT_LAT,
+      lng: DEFAULT_LNG,
+    }, MAP_ZOOM
+  );
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap'
@@ -28,23 +31,32 @@ const mainPinIcon = L.icon({
   iconAnchor: [26, 52],
 });
 
-const mainPinMarker = L.marker(
-  {
-    lat: 35.6895,
-    lng: 139.692,
-  },
-  {
-    draggable: true,
-    icon: mainPinIcon,
-  },
-).addTo(map);
+const getMarkerGroup = L.layerGroup().addTo(map);
 
-mainPinMarker.on('moveend', (evt) => {
-  const addressLocation = Object.values(evt.target.getLatLng()).map((item) => item.toFixed(5));
-  addressForm.value = `${addressLocation[0]}, ${addressLocation[1]}`;
-});
+const closeMarkerPopup = () => map.closePopup();
 
-const markerGroup = L.layerGroup().addTo(map);
+const getMainPinMarker = () => {
+  mainPinMarker = L.marker(
+    {
+      lat: DEFAULT_LAT,
+      lng: DEFAULT_LNG,
+    },
+    {
+      draggable: true,
+      icon: mainPinIcon,
+    },
+  ).addTo(map);
+
+  mainPinMarker.on('moveend', (evt) => {
+    const addressLocation = Object.values(evt.target.getLatLng()).map((item) => item.toFixed(5));
+    addressFormValue.value = `${addressLocation[0]}, ${addressLocation[1]}`;
+  });
+};
+
+const resetMainPinMarker = () => {
+  mainPinMarker.remove();
+  getMainPinMarker();
+};
 
 const createMarker = (point) => {
   const { location: { lat, lng } } = point;
@@ -66,11 +78,8 @@ const createMarker = (point) => {
   );
 
   marker
-    .addTo(markerGroup)
-    .bindPopup(createCustomPopup(point));
+    .addTo(getMarkerGroup)
+    .bindPopup(renderSimilarPopup(point));
 };
 
-similarData.forEach((point) => createMarker(point));
-// markerGroup.clearLayers();
-
-export { map, mainPinMarker, mainPinIcon, addressForm };
+export { map, mainPinIcon, createMarker, getMainPinMarker, resetMainPinMarker, closeMarkerPopup, getMarkerGroup };

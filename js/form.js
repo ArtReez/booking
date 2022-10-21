@@ -1,8 +1,15 @@
+/* eslint-disable no-console */
+
+import { adForm, mapFiltersForm } from './active.js';
+import { sendData } from './api.js';
+import { avatarPreview, imagePreview } from './avatar.js';
+import { closeMarkerPopup, getMainPinMarker, resetMainPinMarker, getMarkerGroup } from './map.js';
+import { showError } from './modal.js';
+
 const MIN_TITLE_LENGTH = 30;
 const MAX_TITLE_LENGTH = 100;
 const MIN_PRICE = 0;
 const MAX_PRICE = 1000000;
-
 const titleCard = document.querySelector('#title');
 const priceCard = document.querySelector('#price');
 const typeCard = document.querySelector('#type');
@@ -10,36 +17,78 @@ const roomNumber = document.querySelector('#room_number');
 const roomCapacity = document.querySelector('#capacity');
 const timeinCard = document.querySelector('#timein');
 const timeoutCard = document.querySelector('#timeout');
+const housingType = document.querySelector('#housing-type');
+const housingPrice = document.querySelector('#housing-price');
+const housingRooms = document.querySelector('#housing-rooms');
+const housingGuests = document.querySelector('#housing-guests');
+const housingFeatures = document.querySelector('#housing-features');
+let housingFeatureslist = [];
 
-const typeCardHandler = (typeCardValue) => {
-  const typeCardPrice = {
-    'bungalow': 0,
-    'flat': 1000,
-    'hotel': 3000,
-    'house': 5000,
-    'palace': 10000,
-  };
+const TypeCardPrice = {
+  'bungalow': 0,
+  'flat': 1000,
+  'hotel': 3000,
+  'house': 5000,
+  'palace': 10000,
+};
 
-  if (typeCardValue in typeCardPrice) {
-    priceCard.setAttribute('min', typeCardPrice[typeCardValue]);
-    priceCard.setAttribute('placeholder', typeCardPrice[typeCardValue]);
+const roomNumberGuestToRange = {
+  1: [1],
+  2: [1, 2],
+  3: [1, 2, 3],
+  100: [0],
+};
+
+const setHousingType = (cb) => {
+  housingType.addEventListener('change', () => {
+    getMarkerGroup.clearLayers();
+    cb();
+  });
+};
+
+const setHousingPrice = (cb) => {
+  housingPrice.addEventListener('change', () => {
+    getMarkerGroup.clearLayers();
+    cb();
+  });
+};
+
+const setHousingRooms = (cb) => {
+  housingRooms.addEventListener('change', () => {
+    getMarkerGroup.clearLayers();
+    cb();
+  });
+};
+
+const setHousingGuests = (cb) => {
+  housingGuests.addEventListener('change', () => {
+    getMarkerGroup.clearLayers();
+    cb();
+  });
+};
+
+const setHousingFeatures = (cb) => {
+  housingFeatures.addEventListener('change', () => {
+    housingFeatureslist = Array.from(housingFeatures.children).filter((item) => item.checked).map((item) => item.value);
+    console.log(housingFeatureslist);
+    getMarkerGroup.clearLayers();
+    cb();
+  });
+};
+
+const typeCardSelectHandler = (typeCardValue) => {
+  if (typeCardValue in TypeCardPrice) {
+    priceCard.setAttribute('min', TypeCardPrice[typeCardValue]);
+    priceCard.setAttribute('placeholder', TypeCardPrice[typeCardValue]);
   }
 };
 
-const roomNumberHandler = (roomNumberValue) => {
-  const roomNumberGuest = {
-    1: [1],
-    2: [1, 2],
-    3: [1, 2, 3],
-    100: [0],
-  };
-
-  for (const item of roomCapacity) {
-    item.removeAttribute('selected');
-    item.setAttribute('hidden', '');
-  }
-
-  const roomNumberSelect = (arrayGuests) => {
+const roomNumberSelectHandler = (roomNumberValue) => {
+  const selectRoomNumber = (arrayGuests) => {
+    for (const item of roomCapacity) {
+      item.selected = false;
+      item.setAttribute('hidden', '');
+    }
     arrayGuests.forEach((item) => {
       if (roomCapacity[item].value === item.toString()) {
         roomCapacity[item].removeAttribute('hidden');
@@ -47,18 +96,17 @@ const roomNumberHandler = (roomNumberValue) => {
       }
     });
   };
-  roomNumberSelect(roomNumberGuest[roomNumberValue]);
+
+  selectRoomNumber(roomNumberGuestToRange[roomNumberValue]);
 };
 
-const timeCardHandler = (timeCardValue) => {
+const timeCardSelectHandler = (timeCardValue) => {
   for (let i = 0; i < 3; i++) {
-    timeinCard[i].removeAttribute('selected');
-    timeoutCard[i].removeAttribute('selected');
+    timeinCard[i].selected = false;
+    timeoutCard[i].selected = false;
 
     if (timeinCard[i].value === timeCardValue || timeoutCard[i].value === timeCardValue) {
-      timeinCard[i].setAttribute('selected', '');
       timeinCard[i].selected = true;
-      timeoutCard[i].setAttribute('selected', '');
       timeoutCard[i].selected = true;
     }
   }
@@ -92,25 +140,156 @@ priceCard.addEventListener('input', () => {
 });
 
 roomNumber.addEventListener('change', (evt) => {
-  roomNumberHandler(evt.target.value);
+  roomNumberSelectHandler(evt.target.value);
 });
 
 typeCard.addEventListener('change', (evt) => {
-  typeCardHandler(evt.target.value);
+  typeCardSelectHandler(evt.target.value);
 });
 
 timeinCard.addEventListener('change', (evt) => {
-  timeCardHandler(evt.target.value);
+  timeCardSelectHandler(evt.target.value);
 });
 
 timeoutCard.addEventListener('change', (evt) => {
-  timeCardHandler(evt.target.value);
+  timeCardSelectHandler(evt.target.value);
 });
+
+const getHousingPrice = (price) => {
+  if (price < 10000) {
+    return 'low';
+  } else if (price >= 10000 && price <= 50000) {
+    return 'middle';
+  } else if (price > 50000) {
+    return 'high';
+  }
+  return 'any';
+};
+
+const filterCardType = (data) => {
+  if (data.offer.type === housingType.value || housingType.value === 'any') {
+    return data;
+  }
+};
+
+const filterCardPrice = (data) => {
+  if (getHousingPrice(data.offer.price) === housingPrice.value || housingPrice.value === 'any') {
+    return data;
+  }
+};
+
+const filterCardRooms = (data) => {
+  if (data.offer.rooms === +housingRooms.value || housingRooms.value === 'any') {
+    return data;
+  }
+};
+
+const filterCardGuests = (data) => {
+  if (data.offer.guests === +housingGuests.value || housingGuests.value === 'any') {
+    return data;
+  }
+};
+
+const filterCardFeatures = (data) => {
+  if (!data.offer.features ) {
+    data.offer.features = [];
+  }
+
+  const includesFeaturesList = housingFeatureslist.map((item) => data.offer.features.includes(item));
+  const isFeaturesCheck = includesFeaturesList.every((item) => item === true);
+  if (isFeaturesCheck) {
+    return data;
+  }
+
+  // --- Compare exactly the same array - Compare Fetures v1.0
+  //   if (data.offer.features.slice().sort().join(',') === housingFeatureslist.slice().sort().join(',')) {
+  //     return data;
+  //   }
+};
+
+const getCardRank = (data) => {
+  let rank = 0;
+
+  if (data.offer.type === housingType.value) {
+    rank += 1;
+  }
+
+  if (getHousingPrice(data.offer.price) === housingPrice.value) {
+    rank += 1;
+  }
+
+  if (data.offer.rooms === +housingRooms.value) {
+    rank += 1;
+  }
+
+  if (data.offer.guests === +housingGuests.value) {
+    rank += 1;
+  }
+
+  // --- Compare exactly the same array - Compare Fetures v1.0
+  // if (data.offer.features.slice().sort().join(',') === housingFeatureslist.slice().sort().join(',')) {
+  //   rank += 1;
+  //   console.log(rank);
+  // }
+
+  return rank;
+};
+
+const compareCards = (cardA, cardB) => {
+  const rankA = getCardRank(cardA);
+  const rankB = getCardRank(cardB);
+  return rankB - rankA;
+};
+
+const resetForms = () => {
+  mapFiltersForm.reset();
+  adForm.reset();
+  closeMarkerPopup();
+  resetMainPinMarker();
+  getMarkerGroup.clearLayers();
+  typeCardSelectHandler('flat');
+  timeCardSelectHandler('12:00');
+  roomNumberSelectHandler(1);
+  avatarPreview.src = 'img/muffin-grey.svg';
+  imagePreview.innerHTML = '';
+};
 
 document.addEventListener('DOMContentLoaded', () => {
-  roomNumberHandler(1);
-  typeCardHandler('flat');
-  timeCardHandler('12:00');
+  getMainPinMarker();
 });
 
-export { titleCard, priceCard };
+const setFormSubmit = (onSuccess) => {
+  adForm.addEventListener('submit', (evt) => {
+    evt.preventDefault();
+    sendData(
+      () => onSuccess(),
+      () => showError(),
+      new FormData(evt.target)
+    );
+  });
+};
+
+const setFormsReset = (onCreateCards, onResetForms) => {
+  adForm.addEventListener('reset', () => {
+    housingFeatureslist = [];
+    onResetForms();
+    onCreateCards();
+  });
+};
+
+export {
+  resetForms,
+  setFormSubmit,
+  setFormsReset,
+  setHousingType,
+  setHousingPrice,
+  setHousingRooms,
+  setHousingGuests,
+  setHousingFeatures,
+  filterCardType,
+  filterCardPrice,
+  filterCardRooms,
+  filterCardGuests,
+  filterCardFeatures,
+  compareCards,
+};

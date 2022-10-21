@@ -1,14 +1,19 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable prefer-const */
-/* eslint-disable no-console */
+import { setFormSubmit, setFormsReset, resetForms, setHousingType, setHousingPrice, setHousingRooms, setHousingGuests, setHousingFeatures } from './form.js';
+import { showSuccess } from './modal.js';
+import { createCards } from './card.js';
+import { getData } from './api.js';
+import { debounce } from './util.js';
+import './avatar.js';
 
-import { similarData } from './data.js';
-import { titleCard, priceCard } from './form.js';
-import { map, mainPinMarker, mainPinIcon, addressForm } from './map.js';
-import { mapList } from './card.js';
-// import { disabledForm } from './active.js';
 
-// console.log(titleCard);
+getData((data) => {
+  createCards(data);
+  setHousingType(debounce(() => createCards(data)));
+  setHousingPrice(debounce(() => createCards(data)));
+  setHousingRooms(debounce(() => createCards(data)));
+  setHousingGuests(debounce(() => createCards(data)));
+  setHousingFeatures(debounce(() => createCards(data)));
+  setFormsReset(debounce(() => createCards(data)), resetForms);
+});
 
-// disabledForm();
-// enabledForm();
+setFormSubmit(showSuccess);
